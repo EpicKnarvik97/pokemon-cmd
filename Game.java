@@ -10,23 +10,24 @@ import java.text.ParseException;
 
 /** Simulates the game Pokémon. */
 public class Game {
+	public static Scanner in = new Scanner(System.in);
+	
 	public static void main(String[] args) {
 		ArrayList<Pokemon> pokemon = readPokemon();
 		int initialPokemon = pokemon.size();
-		ArrayList<Pokemon> temporaryPokemonList = readPokemon();
-		ArrayList<Pokemon> usersPokemon = new ArrayList<Pokemon>();
-		for (int i = 1; i <= 6; i++) {
-			usersPokemon.add(pick(temporaryPokemonList));
-		}
-		temporaryPokemonList.clear();
+		ArrayList<Pokemon> usersPokemon = randomTeam();
 		ArrayList<Item> usersItems = prepareInventory();
+		
+		System.out.println("What is your name?");
+		String name = in.nextLine();
+		Trainer player = new Trainer(name, usersPokemon, usersItems);
+		
 		boolean done = false;
 		Pokemon opponentPokemon = null;
 		Pokemon trainersPokemon = null;
 		Item currentItem = null;
 		boolean fleeSuccess = false;
 		Pokemon pokemonToHeal = null;
-		Scanner in = new Scanner(System.in);
 		
 		opponentPokemon = randomPokemon(pokemon);
 		System.out.printf("A wild %s appeared.%n", opponentPokemon.getName());
@@ -38,13 +39,13 @@ public class Game {
 								+ "There really is nothing more to do here.%n", initialPokemon);
 				return;
 			}
-			if (!consciousPokemon(usersPokemon)) {
+			if (!consciousPokemon(player.getPokemon())) {
 				System.out.println("All your pokemon have fainted. Your journey ends here.");
 				return;
 			}
 			while (trainersPokemon == null || !trainersPokemon.isConscious()) {
-				availablePokemon(usersPokemon, "conscious");
-				trainersPokemon = usersChoice(usersPokemon, true);
+				availablePokemon(player.getConsciousPokemon());
+				trainersPokemon = usersChoice(player.getConsciousPokemon());
 			}
 			System.out.printf("Opponent: %s%nWhat will you do?%n", opponentPokemon);
 			System.out.printf("b: battle"
@@ -81,11 +82,11 @@ public class Game {
 							System.out.println("Invalid item.");
 						} else {
 							if (currentItem.needsAlive()) {
-								availablePokemon(usersPokemon, "conscious");
-								pokemonToHeal = usersChoice(usersPokemon, true);
+								availablePokemon(player.getConsciousPokemon());
+								pokemonToHeal = usersChoice(player.getConsciousPokemon());
 							} else {
-								availablePokemon(usersPokemon, "fainted");
-								pokemonToHeal = usersChoice(usersPokemon, false);
+								availablePokemon(player.getFaintedPokemon());
+								pokemonToHeal = usersChoice(player.getFaintedPokemon());
 							}
 							if (pokemonToHeal == null) {
 								System.out.println("That is not a valid pokemon");
@@ -125,11 +126,11 @@ public class Game {
 					}
 					break;
 				case 'c':
-					availablePokemon(usersPokemon, "conscious");
-					trainersPokemon = usersChoice(usersPokemon, true);
+					availablePokemon(player.getConsciousPokemon());
+					trainersPokemon = usersChoice(player.getConsciousPokemon());
 					while (trainersPokemon == null) {
-						availablePokemon(usersPokemon, "conscious");
-						trainersPokemon = usersChoice(usersPokemon, true);
+						availablePokemon(player.getConsciousPokemon());
+						trainersPokemon = usersChoice(player.getConsciousPokemon());
 					}
 					opponentPokemon.attack(trainersPokemon);
 					break;
@@ -146,12 +147,12 @@ public class Game {
 						System.out.println("One or more savefiles seem corrupt. Please delete or fix the affected file(s).");
 					} else {
 						pokemon = loadedPokemon;
-						usersPokemon = loadedUsersPokemon;
-						usersItems = loadedUsersItems;
+						player.setPokemon(loadedUsersPokemon);
+						player.setItems(loadedUsersItems);
 						if (pokemon.size() > 0 && usersPokemon.size() > 0) {
 							do {
-								availablePokemon(usersPokemon, "conscious");
-								trainersPokemon = usersChoice(usersPokemon, true);
+								availablePokemon(player.getConsciousPokemon());
+								trainersPokemon = usersChoice(player.getConsciousPokemon());
 							} while (trainersPokemon == null || !trainersPokemon.isConscious());
 							opponentPokemon = randomPokemon(pokemon);
 						}
@@ -169,7 +170,7 @@ public class Game {
 					}
 					break;
 				case 'v':
-					availablePokemon(usersPokemon, "all");
+					availablePokemon(player.getPokemon());
 					System.out.println();
 					break;
 				case 'q':
@@ -247,23 +248,10 @@ public class Game {
 	 * @param pokemonList	List of all the user's pokemon.
 	 * @param type			Should we only include a certain type of pokemon.
 	 */
-	public static void availablePokemon(ArrayList<Pokemon> pokemonList, String type) {
+	public static void availablePokemon(ArrayList<Pokemon> pokemonList) {
 		System.out.println("You may choose from these pokemon:");
 		for (int i = 0; i < pokemonList.size(); i++) {
-			switch (type) {
-				case "conscious":
-					if (pokemonList.get(i).isConscious()) {
-						System.out.printf("%d: %s%n", i + 1, pokemonList.get(i));
-					}
-					break;
-				case "fainted":
-					if (!pokemonList.get(i).isConscious()) {
-						System.out.printf("%d: %s%n", i + 1, pokemonList.get(i));
-					}
-					break;
-				default:
-					System.out.printf("%d: %s%n", i + 1, pokemonList.get(i));
-			}
+			System.out.printf("%d: %s%n", i + 1, pokemonList.get(i));
 			
 		}
 		System.out.print(">");
@@ -289,14 +277,11 @@ public class Game {
 	 * @param pokemonList	A list of available pokemon
 	 * @return				A pokemon object or null.
 	 */
-	public static Pokemon usersChoice(ArrayList<Pokemon> pokemonList, boolean alive) {
-		Scanner in = new Scanner(System.in);
+	public static Pokemon usersChoice(ArrayList<Pokemon> pokemonList) {
 		if (in.hasNextInt()) {
 			int choice = in.nextInt() - 1;
 			in.nextLine();
-			if (choice >= 0 && choice < pokemonList.size() && alive && pokemonList.get(choice).isConscious()) {
-				return pokemonList.get(choice);
-			} else if (choice >= 0 && choice < pokemonList.size() && !alive && !pokemonList.get(choice).isConscious()) {
+			if (choice >= 0 && choice < pokemonList.size()) {
 				return pokemonList.get(choice);
 			} else {
 				System.out.println("Invalid pokemon");
@@ -311,7 +296,6 @@ public class Game {
 	 * @return			An Item object or null.
 	 */
 	public static Item chosenItem(ArrayList<Item> itemList, Item.Target target) {
-		Scanner in = new Scanner(System.in);
 		if (in.hasNextInt()) {
 			int choice = in.nextInt() - 1;
 			in.nextLine();
@@ -343,9 +327,9 @@ public class Game {
 	 */
 	public static ArrayList<Pokemon> readPokemon() {
 		ArrayList<Pokemon> pokemon = new ArrayList<Pokemon>();
-		try (Scanner in = new Scanner(new File("Pokemon.txt"))) {
-			while (in.hasNextLine()) {
-				pokemon.add(new Pokemon(in.nextLine()));
+		try (Scanner file = new Scanner(new File("Pokemon.txt"))) {
+			while (file.hasNextLine()) {
+				pokemon.add(new Pokemon(file.nextLine()));
 			}
 		} catch (FileNotFoundException e) {
 			System.out.println("You seem to be missing one of the necessary files to run this program.");
@@ -404,10 +388,10 @@ public class Game {
 	 */
 	public static ArrayList<Pokemon> loadPokemon(String savefile) {
 		ArrayList<Pokemon> pokemon = new ArrayList<Pokemon>();
-		try (Scanner in = new Scanner(new File(savefile))) {
+		try (Scanner file = new Scanner(new File(savefile))) {
 			NumberFormat format = NumberFormat.getInstance(Locale.ENGLISH);
-			while (in.hasNextLine()) {
-				String[] data = in.nextLine().split(";");
+			while (file.hasNextLine()) {
+				String[] data = file.nextLine().split(";");
 				try {
 					pokemon.add(new Pokemon(data[0], Integer.parseInt(data[1]), Integer.parseInt(data[2]), Integer.parseInt(data[3]), format.parse(data[4]).doubleValue(), Integer.parseInt(data[5]), Integer.parseInt(data[6]), Integer.parseInt(data[7])));
 				} catch (NumberFormatException e) {
@@ -433,10 +417,10 @@ public class Game {
 	 */
 	public static ArrayList<Item> loadItems(String savefile) {
 		ArrayList<Item> items = new ArrayList<Item>();
-		try (Scanner in = new Scanner(new File(savefile))) {
-			while (in.hasNextLine()) {
+		try (Scanner file = new Scanner(new File(savefile))) {
+			while (file.hasNextLine()) {
 				try {
-					String[] data = in.nextLine().split(";");
+					String[] data = file.nextLine().split(";");
 					items.add(new Item(data[0], data[1], Integer.parseInt(data[2]), Item.Target.valueOf(data[3]), Boolean.parseBoolean(data[4])));
 				} catch (ArrayIndexOutOfBoundsException e) {
 					System.out.println("Invalid savefile: " + savefile);
@@ -448,5 +432,14 @@ public class Game {
 			System.out.println("You don't have a valid savefile.");
 		}
 		return items;
+	}
+	
+	public static ArrayList<Pokemon> randomTeam() {
+		ArrayList<Pokemon> temporary = readPokemon();
+		ArrayList<Pokemon> pokemon = new ArrayList<Pokemon>();
+		for (int i = 1; i <= 6; i++) {
+			pokemon.add(pick(temporary));
+		}
+		return pokemon;
 	}
 }
