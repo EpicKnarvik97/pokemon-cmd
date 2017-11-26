@@ -16,16 +16,16 @@ public class Game {
 		ArrayList<Pokemon> pokemon = readPokemon();
 		int initialPokemon = pokemon.size();
 		ArrayList<Pokemon> usersPokemon = randomTeam();
-		ArrayList<Item> usersItems = prepareInventory();
 		
 		System.out.println("What is your name?");
 		String name = in.nextLine();
-		Trainer player = new Trainer(name, usersPokemon, usersItems);
+		Trainer player = new Trainer(name, usersPokemon, createInventory());
 		
 		boolean done = false;
 		Pokemon opponentPokemon = null;
 		Pokemon trainersPokemon = null;
-		Item currentItem = null;
+		Pokeball currentPokeball = null;
+		Potion currentPotion = null;
 		boolean fleeSuccess = false;
 		Pokemon pokemonToHeal = null;
 		
@@ -75,13 +75,13 @@ public class Game {
 					}
 					break;
 				case 'h':
-					if (itemsLeft(usersItems, Item.Target.SELF)) {
-						availableItems(usersItems, Item.Target.SELF);
-						currentItem = chosenItem(usersItems, Item.Target.SELF);
-						if (currentItem == null) {
-							System.out.println("Invalid item.");
+					if (player.getInventory().getPotions().size() > 0) {
+						availablePotions(player.getInventory().getPotions());
+						currentPotion = chosenPotion(player.getInventory().getPotions());
+						if (currentPotion == null) {
+							System.out.println("Invalid potion.");
 						} else {
-							if (currentItem.needsAlive()) {
+							if (currentPotion.needsAlive()) {
 								availablePokemon(player.getConsciousPokemon());
 								pokemonToHeal = usersChoice(player.getConsciousPokemon());
 							} else {
@@ -91,7 +91,7 @@ public class Game {
 							if (pokemonToHeal == null) {
 								System.out.println("That is not a valid pokemon");
 							} else {
-								if (currentItem.use(pokemonToHeal)) {
+								if (currentPotion.use(pokemonToHeal)) {
 									opponentPokemon.attack(trainersPokemon);
 								}
 							}
@@ -101,18 +101,18 @@ public class Game {
 					}
 					break;
 				case 't':
-					if (itemsLeft(usersItems, Item.Target.OTHER)) {
-						availableItems(usersItems, Item.Target.OTHER);
-						currentItem = chosenItem(usersItems, Item.Target.OTHER);
-						if (currentItem == null) {
+					if (player.getInventory().getPokeballs().size() > 0) {
+						availablePokeballs(player.getInventory().getPokeballs());
+						currentPokeball = chosenPokeball(player.getInventory().getPokeballs());
+						if (currentPokeball == null) {
 							System.out.println("Invalid pokeball.");
 						} else {
-							if (currentItem.getName().toLowerCase().replace(" ", "").equals("masterball")) {
-								currentItem.use(opponentPokemon, pokemon, usersPokemon);
+							if (currentPokeball.getType() == Pokeball.Pokeballs.MASTERBALL) {
+								currentPokeball.use(opponentPokemon, pokemon, usersPokemon);
 								opponentPokemon = randomPokemon(pokemon);
 								System.out.printf("A wild %s appeared.%n", opponentPokemon.getName());
 							} else {
-								boolean captured = currentItem.use(opponentPokemon, pokemon, usersPokemon);
+								boolean captured = currentPokeball.use(opponentPokemon, pokemon, usersPokemon);
 								if (captured) {
 									opponentPokemon = randomPokemon(pokemon);
 									System.out.printf("A wild %s appeared.%n", opponentPokemon.getName());
@@ -137,18 +137,18 @@ public class Game {
 				case 's':
 					savePokemon(pokemon, "pokemon.save");
 					savePokemon(usersPokemon, "user.save");
-					saveItems(usersItems, "items.save");
+					saveInventory(player.getInventory(), "inventory.save");
 					break;
 				case 'l':
 					ArrayList<Pokemon> loadedPokemon = loadPokemon("pokemon.save");
 					ArrayList<Pokemon> loadedUsersPokemon = loadPokemon("user.save");
-					ArrayList<Item> loadedUsersItems = loadItems("items.save");
-					if (loadedPokemon == null || loadedUsersPokemon == null || loadedUsersItems == null) {
+					Inventory loadedInventory = loadInventory("inventory.save");
+					if (loadedPokemon == null || loadedUsersPokemon == null || loadedInventory == null) {
 						System.out.println("One or more savefiles seem corrupt. Please delete or fix the affected file(s).");
 					} else {
 						pokemon = loadedPokemon;
 						player.setPokemon(loadedUsersPokemon);
-						player.setItems(loadedUsersItems);
+						player.setInventory(loadedInventory);
 						if (pokemon.size() > 0 && usersPokemon.size() > 0) {
 							do {
 								availablePokemon(player.getConsciousPokemon());
@@ -200,12 +200,17 @@ public class Game {
 	 * @param items		List of all of the user's items.
 	 * @param target	We are either listing items targeted at an opponent pokemon or at our own pokemon.
 	 */
-	public static void availableItems(ArrayList<Item> items, Item.Target target) {
+	public static void availablePotions(ArrayList<Potion> potions) {
 		System.out.println("You may choose from these items:");
-		for (int i = 0; i < items.size(); i++) {
-			if (items.get(i).getAmount() > 0 && items.get(i).getTarget().equals(target)) {
-				System.out.printf("%d: %s%n", i + 1, items.get(i));
-			}
+		for (int i = 0; i < potions.size(); i++) {
+			System.out.printf("%d: %s%n", i + 1, potions.get(i));
+		}
+		System.out.print(">");
+	}
+	public static void availablePokeballs(ArrayList<Pokeball> pokeballs) {
+		System.out.println("You may choose from these items:");
+		for (int i = 0; i < pokeballs.size(); i++) {
+			System.out.printf("%d: %s%n", i + 1, pokeballs.get(i));
 		}
 		System.out.print(">");
 	}
@@ -214,33 +219,18 @@ public class Game {
 	 * Gives a trainer necessary starting items.
 	 * @return	A list of items.
 	 */
-	public static ArrayList<Item> prepareInventory() {
-		ArrayList<Item> usersItems = new ArrayList<Item>();
-		usersItems.add(new Item("Poke Ball", "A device for catching wild Pokémon. It's thrown like a ball at a Pokémon, comfortably encapsulating its target.", 15, Item.Target.OTHER));
-		usersItems.add(new Item("Great ball", "A good, high-performance Poké Ball that provides a higher Pokémon catch rate than a standard Poké Ball.", 10, Item.Target.OTHER));
-		usersItems.add(new Item("Ultra ball", "An ultra-high-performance Poké Ball that provides a higher success rate for catching Pokémon than a Great Ball.", 5, Item.Target.OTHER));
-		usersItems.add(new Item("Master ball", "The best Poké Ball with the ultimate level of performance. With it, you will catch any wild Pokémon without fail.", 1, Item.Target.OTHER));
-		usersItems.add(new Item("Potion", "Heals a pokemon for 20 HP.", 20, Item.Target.SELF));
-		usersItems.add(new Item("Super Potion", "Heals a pokemon for 50 HP.", 10, Item.Target.SELF));
-		usersItems.add(new Item("Hyper Potion", "Heals a pokemon for 200 HP.", 5, Item.Target.SELF));
-		usersItems.add(new Item("Max Potion", "Fully heals a pokemon.", 1, Item.Target.SELF));
-		usersItems.add(new Item("Revive", "Revives a fainted pokemon.", 2, Item.Target.SELF, false));
-		return usersItems;
-	}
-	
-	/**
-	 * Checks if the user has any item left of any type.
-	 * @param items	List of all of the user's items.
-	 * @return		True if any items are left. False otherwise.
-	 */
-	public static boolean itemsLeft(ArrayList<Item> items, Item.Target target) {
-		int count = 0;
-		for (Item item : items) {
-			if (item.getAmount() > 0 && item.getTarget().equals(target)) {
-				count++;
-			}
-		}
-		return count > 0;
+	public static Inventory createInventory() {
+		Inventory inventory = new Inventory();
+		inventory.addPokeball("Poke Ball", "A device for catching wild Pokémon. It's thrown like a ball at a Pokémon, comfortably encapsulating its target.", 15);
+		inventory.addPokeball("Great ball", "A good, high-performance Poké Ball that provides a higher Pokémon catch rate than a standard Poké Ball.", 10);
+		inventory.addPokeball("Ultra ball", "An ultra-high-performance Poké Ball that provides a higher success rate for catching Pokémon than a Great Ball.", 5);
+		inventory.addPokeball("Master ball", "The best Poké Ball with the ultimate level of performance. With it, you will catch any wild Pokémon without fail.", 1);
+		inventory.addPotion("Potion", "Heals a pokemon for 20 HP.", 20, true);
+		inventory.addPotion("Super Potion", "Heals a pokemon for 50 HP.", 10, true);
+		inventory.addPotion("Hyper Potion", "Heals a pokemon for 200 HP.", 5, true);
+		inventory.addPotion("Max Potion", "Fully heals a pokemon.", 1, true);
+		inventory.addPotion("Revive", "Revives a fainted pokemon.", 2, false);
+		return inventory;
 	}
 	
 	/**
@@ -280,13 +270,13 @@ public class Game {
 	public static Pokemon usersChoice(ArrayList<Pokemon> pokemonList) {
 		if (in.hasNextInt()) {
 			int choice = in.nextInt() - 1;
-			in.nextLine();
 			if (choice >= 0 && choice < pokemonList.size()) {
+				in.nextLine();
 				return pokemonList.get(choice);
-			} else {
-				System.out.println("Invalid pokemon");
 			}
 		}
+		System.out.println("Invalid pokemon");
+		in.nextLine();
 		return null;
 	}
 	
@@ -295,16 +285,26 @@ public class Game {
 	 * @param itemList	Available items.
 	 * @return			An Item object or null.
 	 */
-	public static Item chosenItem(ArrayList<Item> itemList, Item.Target target) {
+	public static Potion chosenPotion(ArrayList<Potion> potions) {
 		if (in.hasNextInt()) {
 			int choice = in.nextInt() - 1;
-			in.nextLine();
-			if (choice >= 0 && choice < itemList.size()) {
-				return itemList.get(choice);
-			} else {
-				System.out.println("Invalid item");
+			if (choice >= 0 && choice < potions.size()) {
+				in.nextLine();
+				return potions.get(choice);
 			}
 		}
+		in.nextLine();
+		return null;
+	}
+	public static Pokeball chosenPokeball(ArrayList<Pokeball> pokeball) {
+		if (in.hasNextInt()) {
+			int choice = in.nextInt() - 1;
+			if (choice >= 0 && choice < pokeball.size()) {
+				in.nextLine();
+				return pokeball.get(choice);
+			}
+		}
+		in.nextLine();
 		return null;
 	}
 	
@@ -370,12 +370,16 @@ public class Game {
 	 * @param itemList	List of Item objects to save.
 	 * @param savefile	The file to write to.
 	 */
-	public static void saveItems(ArrayList<Item> itemList, String savefile) {
+	public static void saveInventory(Inventory inventory, String savefile) {
 		try (PrintWriter file = new PrintWriter(savefile)) {
-			for (Item item : itemList) {
-				file.println(item.saveString());
+			for (Pokeball pokeball : inventory.getPokeballs()) {
+				file.println(pokeball.saveString());
 			}
-			System.out.println("Successfully saved items.");
+			file.println(":NEXTLIST:");
+			for (Potion potion : inventory.getPotions()) {
+				file.println(potion.saveString());
+			}
+			System.out.println("Successfully saved inventory.");
 		} catch (FileNotFoundException e) {
 			System.out.println("The savefile could not be written.");
 		}
@@ -415,13 +419,27 @@ public class Game {
 	 * @param savefile	The file to write to.
 	 * @return			A list of items or null on failiure.
 	 */
-	public static ArrayList<Item> loadItems(String savefile) {
-		ArrayList<Item> items = new ArrayList<Item>();
+	public static Inventory loadInventory(String savefile) {
+		ArrayList<Pokeball> pokeballs = new ArrayList<Pokeball>();
+		ArrayList<Potion> potions = new ArrayList<Potion>();
 		try (Scanner file = new Scanner(new File(savefile))) {
+			String next = "";
+			while (file.hasNextLine() && !next.equals(":NEXTLIST:")) {
+				try {
+					next = file.nextLine();
+					if (!next.equals(":NEXTLIST:")) {
+						String[] data = next.split(";");
+						pokeballs.add(new Pokeball(data[0], data[1], Integer.parseInt(data[2]), Pokeball.Pokeballs.valueOf(data[0].toUpperCase().replace(" ", ""))));
+					}
+				} catch (ArrayIndexOutOfBoundsException e) {
+					System.out.println("Invalid savefile: " + savefile);
+					return null;
+				}
+			}
 			while (file.hasNextLine()) {
 				try {
 					String[] data = file.nextLine().split(";");
-					items.add(new Item(data[0], data[1], Integer.parseInt(data[2]), Item.Target.valueOf(data[3]), Boolean.parseBoolean(data[4])));
+					potions.add(new Potion(data[0], data[1], Integer.parseInt(data[2]), Potion.Potions.valueOf(data[0].toUpperCase().replace(" ", ""))));
 				} catch (ArrayIndexOutOfBoundsException e) {
 					System.out.println("Invalid savefile: " + savefile);
 					return null;
@@ -431,7 +449,7 @@ public class Game {
 		} catch (FileNotFoundException e) {
 			System.out.println("You don't have a valid savefile.");
 		}
-		return items;
+		return new Inventory(pokeballs, potions);
 	}
 	
 	public static ArrayList<Pokemon> randomTeam() {

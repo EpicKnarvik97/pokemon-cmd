@@ -3,20 +3,20 @@ import java.util.ArrayList;
 public class Trainer {
 	String name;
 	private ArrayList<Pokemon> pokemon;
-	private ArrayList<Item> items;
+	private Inventory inventory;
 	
-	public Trainer(String name, ArrayList<Pokemon> pokemon, ArrayList<Item> items) {
+	public Trainer(String name, ArrayList<Pokemon> pokemon, Inventory inventory) {
 		this.name = name;
 		this.pokemon = pokemon;
-		this.items = items;
+		this.inventory = inventory;
 	}
 	
 	public void setPokemon(ArrayList<Pokemon> pokemon) {
 		this.pokemon = pokemon;
 	}
 	
-	public void setItems(ArrayList<Item> items) {
-		this.items = items;
+	public void setInventory(Inventory inventory) {
+		this.inventory = inventory;
 	}
 	
 	public ArrayList<Pokemon> getPokemon() {
@@ -43,13 +43,7 @@ public class Trainer {
 		return pokemon;
 	}
 	
-	public ArrayList<Item> getItems() {
-		ArrayList<Item> items = new ArrayList<Item>();
-		for (Item item : this.items) {
-			if (item.getAmount() > 0) {
-				items.add(item);
-			}
-		}
-		return items;
+	public Inventory getInventory() {
+		return this.inventory;
 	}
 }
