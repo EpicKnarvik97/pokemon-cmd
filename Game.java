@@ -38,13 +38,13 @@ public class Game {
 								+ "There really is nothing more to do here.%n", initialPokemon);
 				return;
 			}
-			if (!consciousPokemon(player.getPokemon())) {
+			if (player.getConsciousPokemon().size() < 1) {
 				System.out.println("All your pokemon have fainted. Your journey ends here.");
 				return;
 			}
 			while (trainersPokemon == null || !trainersPokemon.isConscious()) {
-				availablePokemon(player.getConsciousPokemon());
-				trainersPokemon = usersChoice(player.getConsciousPokemon());
+				player.availablePokemon(true);
+				trainersPokemon = player.choosePokemon(true);
 			}
 			System.out.printf("Opponent: %s%nWhat will you do?%n", opponentPokemon);
 			System.out.printf("b: battle"
@@ -75,18 +75,18 @@ public class Game {
 					break;
 				case 'h':
 					if (player.getInventory().getPotions().size() > 0) {
-						availablePotions(player.getInventory().getPotions());
-						currentPotion = chosenPotion(player.getInventory().getPotions());
+						player.getInventory().availablePotions();
+						currentPotion = player.getInventory().chosenPotion();
 						if (currentPotion == null) {
 							in.nextLine();
 							System.out.println("Invalid potion.");
 						} else {
 							if (currentPotion.needsAlive()) {
-								availablePokemon(player.getConsciousPokemon());
-								pokemonToHeal = usersChoice(player.getConsciousPokemon());
+								player.availablePokemon(true);
+								pokemonToHeal = player.choosePokemon(true);
 							} else {
-								availablePokemon(player.getFaintedPokemon());
-								pokemonToHeal = usersChoice(player.getFaintedPokemon());
+								player.availablePokemon(false);
+								pokemonToHeal = player.choosePokemon(false);
 							}
 							if (pokemonToHeal == null) {
 								System.out.println("That is not a valid pokemon");
@@ -102,8 +102,8 @@ public class Game {
 					break;
 				case 't':
 					if (player.getInventory().getPokeballs().size() > 0) {
-						availablePokeballs(player.getInventory().getPokeballs());
-						currentPokeball = chosenPokeball(player.getInventory().getPokeballs());
+						player.getInventory().availablePokeballs();
+						currentPokeball = player.getInventory().chosenPokeball();
 						if (currentPokeball == null) {
 							in.nextLine();
 							System.out.println("Invalid pokeball.");
@@ -127,11 +127,11 @@ public class Game {
 					}
 					break;
 				case 'c':
-					availablePokemon(player.getConsciousPokemon());
-					trainersPokemon = usersChoice(player.getConsciousPokemon());
+					player.availablePokemon(true);
+					trainersPokemon = player.choosePokemon(true);
 					while (trainersPokemon == null) {
-						availablePokemon(player.getConsciousPokemon());
-						trainersPokemon = usersChoice(player.getConsciousPokemon());
+						player.availablePokemon(true);
+						trainersPokemon = player.choosePokemon(true);
 					}
 					opponentPokemon.attack(trainersPokemon);
 					break;
@@ -152,8 +152,8 @@ public class Game {
 						player.setInventory(loadedInventory);
 						if (pokemon.size() > 0 && player.getPokemon().size() > 0) {
 							do {
-								availablePokemon(player.getConsciousPokemon());
-								trainersPokemon = usersChoice(player.getConsciousPokemon());
+								player.availablePokemon(true);
+								trainersPokemon = player.choosePokemon(true);
 							} while (trainersPokemon == null || !trainersPokemon.isConscious());
 							opponentPokemon = randomPokemon(pokemon);
 						}
@@ -171,8 +171,7 @@ public class Game {
 					}
 					break;
 				case 'v':
-					availablePokemon(player.getPokemon());
-					System.out.println();
+					player.printPokemon();
 					break;
 				case 'q':
 					done = true;
@@ -184,7 +183,7 @@ public class Game {
 	}
 	
 	/**
-	 * Prevents wild fainted pokemon to ever be encountered again.
+	 * Prevents wild fainted pokemon from ever being encountered again.
 	 * @param pokemonList	List of pokemon to search.
 	 * @param target		The pokemon to remove.
 	 */
@@ -194,26 +193,6 @@ public class Game {
 				pokemonList.remove(i);
 			}
 		}
-	}
-	
-	/**
-	 * Lists all currently available items for the user.
-	 * @param items		List of all of the user's items.
-	 * @param target	We are either listing items targeted at an opponent pokemon or at our own pokemon.
-	 */
-	public static void availablePotions(ArrayList<Potion> potions) {
-		System.out.println("You may choose from these items:");
-		for (int i = 0; i < potions.size(); i++) {
-			System.out.printf("%d: %s%n", i + 1, potions.get(i));
-		}
-		System.out.print(">");
-	}
-	public static void availablePokeballs(ArrayList<Pokeball> pokeballs) {
-		System.out.println("You may choose from these items:");
-		for (int i = 0; i < pokeballs.size(); i++) {
-			System.out.printf("%d: %s%n", i + 1, pokeballs.get(i));
-		}
-		System.out.print(">");
 	}
 	
 	/**
@@ -232,83 +211,6 @@ public class Game {
 		inventory.addPotion("Max Potion", "Fully heals a pokemon.", 1, true);
 		inventory.addPotion("Revive", "Revives a fainted pokemon.", 2, false);
 		return inventory;
-	}
-	
-	/**
-	 * Lists all currently available pokemon for the user.
-	 * @param pokemonList	List of all the user's pokemon.
-	 * @param type			Should we only include a certain type of pokemon.
-	 */
-	public static void availablePokemon(ArrayList<Pokemon> pokemonList) {
-		System.out.println("You may choose from these pokemon:");
-		for (int i = 0; i < pokemonList.size(); i++) {
-			System.out.printf("%d: %s%n", i + 1, pokemonList.get(i));
-			
-		}
-		System.out.print(">");
-	}
-	
-	/**
-	 * Checks if all of the pokemon in a list have fainted.
-	 * @param pokemonList	List of the user's pokemon.
-	 * @return				True if the user has at least one pokemon left. False otherwise.
-	 */
-	public static boolean consciousPokemon(ArrayList<Pokemon> pokemonList) {
-		int pokemonLeft = 0;
-		for (Pokemon pokemon : pokemonList) {
-			if (pokemon.isConscious()) {
-				pokemonLeft++;
-			}
-		}
-		return pokemonLeft > 0;
-	}
-	
-	/**
-	 * Asks the user for the name of a pokemon and returns it.
-	 * @param pokemonList	A list of available pokemon
-	 * @return				A pokemon object or null.
-	 */
-	public static Pokemon usersChoice(ArrayList<Pokemon> pokemonList) {
-		if (in.hasNextInt()) {
-			int choice = in.nextInt() - 1;
-			if (choice >= 0 && choice < pokemonList.size()) {
-				in.nextLine();
-				return pokemonList.get(choice);
-			}
-		}
-		System.out.println("Invalid pokemon");
-		in.nextLine();
-		return null;
-	}
-	
-	/**
-	 * Asks the user for an item, and validates it.
-	 * @param itemList	Available items.
-	 * @return			An Item object or null.
-	 */
-	public static Potion chosenPotion(ArrayList<Potion> potions) {
-		if (in.hasNextInt()) {
-			int choice = in.nextInt() - 1;
-			if (choice >= 0 && choice < potions.size()) {
-				in.nextLine();
-				return potions.get(choice);
-			}
-		} else {
-			in.nextLine();
-		}
-		return null;
-	}
-	public static Pokeball chosenPokeball(ArrayList<Pokeball> pokeball) {
-		if (in.hasNextInt()) {
-			int choice = in.nextInt() - 1;
-			if (choice >= 0 && choice < pokeball.size()) {
-				in.nextLine();
-				return pokeball.get(choice);
-			}
-		} else {
-			in.nextLine();
-		}
-		return null;
 	}
 	
 	/**

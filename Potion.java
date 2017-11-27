@@ -103,5 +103,4 @@ public class Potion {
 			return false;
 		}
 	}
-	
 }
