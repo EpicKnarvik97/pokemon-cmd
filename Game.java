@@ -15,11 +15,10 @@ public class Game {
 	public static void main(String[] args) {
 		ArrayList<Pokemon> pokemon = readPokemon();
 		int initialPokemon = pokemon.size();
-		ArrayList<Pokemon> usersPokemon = randomTeam();
 		
 		System.out.println("What is your name?");
 		String name = in.nextLine();
-		Trainer player = new Trainer(name, usersPokemon, createInventory());
+		Trainer player = new Trainer(name, randomTeam(), createInventory());
 		
 		boolean done = false;
 		Pokemon opponentPokemon = null;
@@ -79,6 +78,7 @@ public class Game {
 						availablePotions(player.getInventory().getPotions());
 						currentPotion = chosenPotion(player.getInventory().getPotions());
 						if (currentPotion == null) {
+							in.nextLine();
 							System.out.println("Invalid potion.");
 						} else {
 							if (currentPotion.needsAlive()) {
@@ -105,14 +105,15 @@ public class Game {
 						availablePokeballs(player.getInventory().getPokeballs());
 						currentPokeball = chosenPokeball(player.getInventory().getPokeballs());
 						if (currentPokeball == null) {
+							in.nextLine();
 							System.out.println("Invalid pokeball.");
 						} else {
 							if (currentPokeball.getType() == Pokeball.Pokeballs.MASTERBALL) {
-								currentPokeball.use(opponentPokemon, pokemon, usersPokemon);
+								currentPokeball.use(opponentPokemon, pokemon, player);
 								opponentPokemon = randomPokemon(pokemon);
 								System.out.printf("A wild %s appeared.%n", opponentPokemon.getName());
 							} else {
-								boolean captured = currentPokeball.use(opponentPokemon, pokemon, usersPokemon);
+								boolean captured = currentPokeball.use(opponentPokemon, pokemon, player);
 								if (captured) {
 									opponentPokemon = randomPokemon(pokemon);
 									System.out.printf("A wild %s appeared.%n", opponentPokemon.getName());
@@ -136,7 +137,7 @@ public class Game {
 					break;
 				case 's':
 					savePokemon(pokemon, "pokemon.save");
-					savePokemon(usersPokemon, "user.save");
+					savePokemon(player.getPokemon(), "user.save");
 					saveInventory(player.getInventory(), "inventory.save");
 					break;
 				case 'l':
@@ -149,7 +150,7 @@ public class Game {
 						pokemon = loadedPokemon;
 						player.setPokemon(loadedUsersPokemon);
 						player.setInventory(loadedInventory);
-						if (pokemon.size() > 0 && usersPokemon.size() > 0) {
+						if (pokemon.size() > 0 && player.getPokemon().size() > 0) {
 							do {
 								availablePokemon(player.getConsciousPokemon());
 								trainersPokemon = usersChoice(player.getConsciousPokemon());

@@ -23,6 +23,10 @@ public class Trainer {
 		return this.pokemon;
 	}
 	
+	public void addPokemon(Pokemon pokemon) {
+		this.pokemon.add(pokemon);
+	}
+	
 	public ArrayList<Pokemon> getConsciousPokemon() {
 		ArrayList<Pokemon> pokemon = new ArrayList<Pokemon>();
 		for (Pokemon singlePokemon : this.pokemon) {

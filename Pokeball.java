@@ -41,7 +41,7 @@ public class Pokeball {
 	 * @param catcher	Where we send the pokemon on a successfull capture.
 	 * @return			True if nothing went wrong. False otherwise.
 	 */
-	public boolean use(Pokemon target, ArrayList<Pokemon> current, ArrayList<Pokemon> catcher) {
+	public boolean use(Pokemon target, ArrayList<Pokemon> current, Trainer catcher) {
 		if (this.amount > 0) {
 			this.amount--;
 			switch (this.type) {

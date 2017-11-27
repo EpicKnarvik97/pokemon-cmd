@@ -91,7 +91,7 @@ public class Pokemon {
 	 * @param catcher	The list to send the pokemon on successfull capture.
 	 * @return			True on successfull capture. False otherwise.
 	 */
-	public boolean tryCapture(ArrayList<Pokemon> current, ArrayList<Pokemon> catcher, int range) {
+	public boolean tryCapture(ArrayList<Pokemon> current, Trainer catcher, int range) {
 		if (range == 0) {
 			this.capture(current, catcher);
 			System.out.printf("%s was caught.%n", this.name);
@@ -112,8 +112,8 @@ public class Pokemon {
 	 * @param current	The pokemon list the pokemon belongs to.
 	 * @param catcher	The pokemon list of the trainer.
 	 */
-	private void capture(ArrayList<Pokemon> current, ArrayList<Pokemon> catcher) {
-		catcher.add(this);
+	private void capture(ArrayList<Pokemon> current, Trainer trainer) {
+		trainer.addPokemon(this);
 		for (int i = 0; i < current.size(); i++) {
 			if (current.get(i) == this) {
 				current.remove(i);
