@@ -293,8 +293,9 @@ public class Game {
 				in.nextLine();
 				return potions.get(choice);
 			}
+		} else {
+			in.nextLine();
 		}
-		in.nextLine();
 		return null;
 	}
 	public static Pokeball chosenPokeball(ArrayList<Pokeball> pokeball) {
@@ -304,8 +305,9 @@ public class Game {
 				in.nextLine();
 				return pokeball.get(choice);
 			}
+		} else {
+			in.nextLine();
 		}
-		in.nextLine();
 		return null;
 	}
 	
