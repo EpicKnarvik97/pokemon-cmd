@@ -241,7 +241,7 @@ public class Game {
 		}
 		/** If the file is compiled as jar, this will prevent an empty list. */
 		if (pokemon.size() < 1) {
-			try (Scanner file = new Scanner(Game.class.getResourceAsStream("/Pokemon.txt"))) {
+			try (Scanner file = new Scanner(Game.class.getResourceAsStream("/config/Pokemon.txt"))) {
 				while (file.hasNextLine()) {
 					pokemon.add(new Pokemon(file.nextLine()));
 				}

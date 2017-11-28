@@ -1,1 +1,1 @@
-java -jar Game.jar -Dfile.encoding=UTF-8
+java.exe -jar Game.jar -Dfile.encoding=UTF-8
