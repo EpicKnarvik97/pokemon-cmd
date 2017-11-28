@@ -239,6 +239,14 @@ public class Game {
 		} catch (FileNotFoundException e) {
 			System.out.println("You seem to be missing one of the necessary files to run this program.");
 		}
+		/** If the file is compiled as jar, this will prevent an empty list. */
+		if (pokemon.size() < 1) {
+			try (Scanner file = new Scanner(Game.class.getResourceAsStream("/Pokemon.txt"))) {
+				while (file.hasNextLine()) {
+					pokemon.add(new Pokemon(file.nextLine()));
+				}
+			}
+		}
 		return pokemon;
 	}
 	

@@ -1,0 +1,1 @@
+jar cvfm Game.jar manifest.txt *.class Pokemon.txt
