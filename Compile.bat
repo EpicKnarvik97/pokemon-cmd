@@ -1,1 +1,1 @@
-jar cvfm Game.jar manifest.txt *.class Pokemon.txt
+jar cvfm Game.jar manifest.txt java/*.class java/config/Pokemon.txt
