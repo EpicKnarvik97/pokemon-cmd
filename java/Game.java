@@ -145,7 +145,7 @@ public class Game {
 					ArrayList<Pokemon> loadedUsersPokemon = loadPokemon("user.save");
 					Inventory loadedInventory = loadInventory("inventory.save");
 					if (loadedPokemon == null || loadedUsersPokemon == null || loadedInventory == null) {
-						System.out.println("One or more savefiles seem corrupt. Please delete or fix the affected file(s).");
+						System.out.println("One or more savefiles seem corrupt or missing. Please delete, create or fix the affected file(s).");
 					} else {
 						pokemon = loadedPokemon;
 						player.setPokemon(loadedUsersPokemon);
@@ -237,10 +237,7 @@ public class Game {
 				pokemon.add(new Pokemon(file.nextLine()));
 			}
 		} catch (FileNotFoundException e) {
-			System.out.println("You seem to be missing one of the necessary files to run this program.");
-		}
-		/** If the file is compiled as jar, this will prevent an empty list. */
-		if (pokemon.size() < 1) {
+			/** If the file is compiled as jar, this will prevent an empty list. */
 			try (Scanner file = new Scanner(Game.class.getResourceAsStream("/config/Pokemon.txt"))) {
 				while (file.hasNextLine()) {
 					pokemon.add(new Pokemon(file.nextLine()));
@@ -322,7 +319,8 @@ public class Game {
 			}
 			System.out.println("Successfully loaded pokemon.");
 		} catch (FileNotFoundException e) {
-			System.out.println("You don't have a valid savefile.");
+			System.out.println("Missing savefile " + savefile);
+			return null;
 		}
 		return pokemon;
 	}
@@ -360,7 +358,8 @@ public class Game {
 			}
 			System.out.println("Successfully loaded items.");
 		} catch (FileNotFoundException e) {
-			System.out.println("You don't have a valid savefile.");
+			System.out.println("Missing savefile " + savefile);
+			return null;
 		}
 		return new Inventory(pokeballs, potions);
 	}
