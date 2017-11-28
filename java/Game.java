@@ -232,7 +232,7 @@ public class Game {
 	 */
 	public static ArrayList<Pokemon> readPokemon() {
 		ArrayList<Pokemon> pokemon = new ArrayList<Pokemon>();
-		try (Scanner file = new Scanner(new File("Pokemon.txt"))) {
+		try (Scanner file = new Scanner(new File("config/Pokemon.txt"))) {
 			while (file.hasNextLine()) {
 				pokemon.add(new Pokemon(file.nextLine()));
 			}
