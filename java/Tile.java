@@ -5,7 +5,7 @@ public class Tile {
 	private Action action;
 	private int[] teleportTarget;
 	
-	public Tile (char representation, boolean solid, String action) {
+	public Tile (char representation, boolean solid, String action) throws IllegalArgumentException {
 		this.representation = representation;
 		this.solid = solid;
 		this.action = Action.valueOf(action.toUpperCase());
@@ -16,12 +16,16 @@ public class Tile {
 		}
 	}
 	
-	public Tile (char representation, boolean solid, String action, int x, int y) {
+	public Tile (char representation, boolean solid, String action, int x, int y) throws IllegalArgumentException {
 		this.representation = representation;
 		this.solid = solid;
 		this.action = Action.valueOf(action.toUpperCase());
-		int[] intArray = {x, y};
-		this.teleportTarget = intArray;
+		if (this.action == Action.TELEPORT) {
+			int[] intArray = {x, y};
+			this.teleportTarget = intArray;
+		} else {
+			throw new IllegalArgumentException("A non-teleport tile can't have a teleport target.");
+		}
 	}
 	
 	public char toChar() {
