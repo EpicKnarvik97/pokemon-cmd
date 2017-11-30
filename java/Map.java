@@ -27,6 +27,7 @@ public class Map {
 				this.placeStructure(structure, x, y);
 			}
 		}
+		System.out.println("Invalid structure name.");
 	}
 	
 	private void placeStructure(Structure structure, int x, int y) {

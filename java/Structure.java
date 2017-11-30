@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 
 public class Structure {
-	private static ArrayList<Structure> structures;
+	private static ArrayList<Structure> structures = new ArrayList<Structure>();
 	private Tile[][] tiles;
 	private String name;
 	
