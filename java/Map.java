@@ -1,7 +1,11 @@
 public class Map {
 	private Tile[][] tiles;
+	private int wWidth;
+	private int wHeight;
 	
 	public Map(int width, int height, int wWidth, int wHeight, Tile empty, Tile wall) {
+		this.wWidth = wWidth;
+		this.wHeight = wHeight;
 		int fullHeight = height + (2 * wHeight);
 		int fullWidth = width + (2 * wWidth);
 		Tile[][] map = new Tile[fullHeight][fullWidth];
