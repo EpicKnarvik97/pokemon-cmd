@@ -1,13 +1,13 @@
 import java.util.ArrayList;
 import java.util.Scanner;
 
-public class Trainer {
-	public static Scanner in = new Scanner(System.in);
-	String name;
+class Trainer {
+	private static final Scanner in = new Scanner(System.in);
+	private final String name;
 	private ArrayList<Pokemon> pokemon;
 	private Inventory inventory;
 	
-	public Trainer(String name, ArrayList<Pokemon> pokemon, Inventory inventory) {
+	Trainer(String name, ArrayList<Pokemon> pokemon, Inventory inventory) {
 		this.name = name;
 		this.pokemon = pokemon;
 		this.inventory = inventory;
@@ -30,7 +30,7 @@ public class Trainer {
 	}
 	
 	public ArrayList<Pokemon> getConsciousPokemon() {
-		ArrayList<Pokemon> pokemon = new ArrayList<Pokemon>();
+		ArrayList<Pokemon> pokemon = new ArrayList<>();
 		for (Pokemon singlePokemon : this.pokemon) {
 			if (singlePokemon.isConscious()) {
 				pokemon.add(singlePokemon);
@@ -39,8 +39,8 @@ public class Trainer {
 		return pokemon;
 	}
 	
-	public ArrayList<Pokemon> getFaintedPokemon() {
-		ArrayList<Pokemon> pokemon = new ArrayList<Pokemon>();
+	private ArrayList<Pokemon> getFaintedPokemon() {
+		ArrayList<Pokemon> pokemon = new ArrayList<>();
 		for (Pokemon singlePokemon : this.pokemon) {
 			if (!singlePokemon.isConscious()) {
 				pokemon.add(singlePokemon);
@@ -55,7 +55,7 @@ public class Trainer {
 	
 	/** Lists all currently available pokemon for the trainer.*/
 	public void availablePokemon(boolean alive) {
-		ArrayList<Pokemon> pokemonList = null;
+		ArrayList<Pokemon> pokemonList;
 		if (alive) {
 			pokemonList = this.getConsciousPokemon();
 		} else {
@@ -76,11 +76,11 @@ public class Trainer {
 	
 	/**
 	 * Asks the user for the name of a pokemon and returns it.
-	 * @param pokemonList	A list of available pokemon
-	 * @return				A pokemon object or null.
+	 * @param alive	Are we looking for alive pokemon?
+	 * @return			A pokemon object or null.
 	 */
 	public Pokemon choosePokemon(boolean alive) {
-		ArrayList<Pokemon> pokemonList = null;
+		ArrayList<Pokemon> pokemonList;
 		if (alive) {
 			pokemonList = this.getConsciousPokemon();
 		} else {

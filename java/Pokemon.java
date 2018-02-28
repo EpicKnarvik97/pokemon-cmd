@@ -2,13 +2,13 @@ import java.util.Random;
 import java.util.ArrayList;
 
 public class Pokemon {
-	private String name;
+	private final String name;
 	private int healthPoints;
 	private int maxHealthPoints;
 	private int strength;
-	private double criticalChance;
-	private Random random;
-	private int catchRate;
+	private final double criticalChance;
+	private final Random random;
+	private final int catchRate;
 	private int exp;
 	private int level;
 	private int fleeCount;
@@ -79,7 +79,7 @@ public class Pokemon {
 	
 	/**
 	 * Checks if a pokemon has not taken any damage or is fully healed.
-	 * @param return	True if health is full. False otherwise.
+	 * @return	True if health is full. False otherwise.
 	 */
 	public boolean isDamaged() {
 		return this.healthPoints < this.maxHealthPoints;
@@ -110,7 +110,7 @@ public class Pokemon {
 	/**
 	 * Captures a wild pokemon.
 	 * @param current	The pokemon list the pokemon belongs to.
-	 * @param catcher	The pokemon list of the trainer.
+	 * @param trainer	The trainer who is capturing.
 	 */
 	private void capture(ArrayList<Pokemon> current, Trainer trainer) {
 		trainer.addPokemon(this);
@@ -136,16 +136,16 @@ public class Pokemon {
 	
 	/**
 	 * Damages a pokemon.
-	 * @param	How many hitpoints are to be deducted.
+	 * @param damageTaken	How many hitpoints are to be deducted.
 	 */
-	public void damage(int damageTaken) {
+    private void damage(int damageTaken) {
 		this.healthPoints = Math.max(this.healthPoints -= damageTaken, 0);
 		System.out.printf("%s takes %d damage and is left with %d/%d HP%n", this.name, damageTaken, this.healthPoints, this.maxHealthPoints);
 	}
 	
 	/**
 	 * Gives a pokemon exp after each successfull battle. Also handles leveling up.
-	 * @target	Which pokemon did we beat.
+	 * @param target	Which pokemon did we beat.
 	 */
 	private void giveEXP(Pokemon target) {
 		int exp = (100 * target.level)/7;

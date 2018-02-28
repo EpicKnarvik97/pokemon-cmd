@@ -1,9 +1,9 @@
 import java.util.ArrayList;
 
-public class Structure {
-	private static ArrayList<Structure> structures = new ArrayList<Structure>();
-	private Tile[][] tiles;
-	private String name;
+class Structure {
+	private static final ArrayList<Structure> structures = new ArrayList<>();
+	private final Tile[][] tiles;
+	private final String name;
 	
 	public Structure(String name, Tile[][] tiles) {
 		this.name = name;
@@ -26,7 +26,26 @@ public class Structure {
 	public int getWidth() {
 		return this.tiles.length;
 	}
-	
+
+	public Direction getDoorDirection() {
+		for (int x = 0; x < this.getWidth(); x++) {
+			for (int y = 0; y < this.getHeight(); y++) {
+				if (!tiles[x][y].isSolid()) {
+					if (y == tiles[x].length - 1) {
+						return Direction.SOUTH;
+					} else if (y == 0) {
+						return Direction.NORTH;
+					} else if (x == 0) {
+						return Direction.WEST;
+					} else if (x == tiles.length - 1) {
+						return Direction.EAST;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
 	public int getHeight() {
 		int max = 0;
 		for (Tile[] tile : this.tiles) {

@@ -27,3 +27,7 @@ hs_err_pid*
 # Script files
 *.bat
 *.sh
+
+#IDEA files
+*.xml
+*.iml

@@ -10,7 +10,7 @@ import java.text.ParseException;
 
 /** Simulates the game Pokémon. */
 public class Game {
-	public static Scanner in = new Scanner(System.in);
+	private static final Scanner in = new Scanner(System.in);
 	
 	public static void main(String[] args) {
 		ArrayList<Pokemon> pokemon = readPokemon();
@@ -21,12 +21,12 @@ public class Game {
 		Trainer player = new Trainer(name, randomTeam(), createInventory());
 		
 		boolean done = false;
-		Pokemon opponentPokemon = null;
+		Pokemon opponentPokemon;
 		Pokemon trainersPokemon = null;
-		Pokeball currentPokeball = null;
-		Potion currentPotion = null;
-		boolean fleeSuccess = false;
-		Pokemon pokemonToHeal = null;
+		Pokeball currentPokeball;
+		Potion currentPotion;
+		boolean fleeSuccess;
+		Pokemon pokemonToHeal;
 		
 		opponentPokemon = randomPokemon(pokemon);
 		System.out.printf("A wild %s appeared.%n", opponentPokemon.getName());
@@ -187,7 +187,7 @@ public class Game {
 	 * @param pokemonList	List of pokemon to search.
 	 * @param target		The pokemon to remove.
 	 */
-	public static void pokemonFainted(ArrayList<Pokemon> pokemonList, Pokemon target) {
+	private static void pokemonFainted(ArrayList<Pokemon> pokemonList, Pokemon target) {
 		for (int i = 0; i < pokemonList.size(); i++) {
 			if (pokemonList.get(i).equals(target)) {
 				pokemonList.remove(i);
@@ -199,7 +199,7 @@ public class Game {
 	 * Gives a trainer necessary starting items.
 	 * @return	A list of items.
 	 */
-	public static Inventory createInventory() {
+	private static Inventory createInventory() {
 		Inventory inventory = new Inventory();
 		inventory.addPokeball("Poke Ball", "A device for catching wild Pokémon. It's thrown like a ball at a Pokémon, comfortably encapsulating its target.", 15);
 		inventory.addPokeball("Great ball", "A good, high-performance Poké Ball that provides a higher Pokémon catch rate than a standard Poké Ball.", 10);
@@ -218,7 +218,7 @@ public class Game {
 	 * @param pokemon	The list to choose from.
 	 * @return			A Pokemon object, or null if the list is empty.
 	 */
-	public static Pokemon randomPokemon(ArrayList<Pokemon> pokemon) {
+	private static Pokemon randomPokemon(ArrayList<Pokemon> pokemon) {
 		if (pokemon.size() > 0) {
 			return pokemon.get((int)(Math.random() * pokemon.size()));
 		} else {
@@ -230,14 +230,14 @@ public class Game {
 	 * Reads pokemon from Pokemon.txt to an ArrayList.
 	 * @return	An ArrayList of pokemon objects.
 	 */
-	public static ArrayList<Pokemon> readPokemon() {
-		ArrayList<Pokemon> pokemon = new ArrayList<Pokemon>();
+	private static ArrayList<Pokemon> readPokemon() {
+		ArrayList<Pokemon> pokemon = new ArrayList<>();
 		try (Scanner file = new Scanner(new File("config/Pokemon.txt"))) {
 			while (file.hasNextLine()) {
 				pokemon.add(new Pokemon(file.nextLine()));
 			}
 		} catch (FileNotFoundException e) {
-			/** If the file is compiled as jar, this will prevent an empty list. */
+			/* If the file is compiled as jar, this will prevent an empty list. */
 			try (Scanner file = new Scanner(Game.class.getResourceAsStream("/config/Pokemon.txt"))) {
 				while (file.hasNextLine()) {
 					pokemon.add(new Pokemon(file.nextLine()));
@@ -252,7 +252,7 @@ public class Game {
 	 * @param pokemon	A list of pokemon objects.
 	 * @return			A pokemon object.
 	 */
-	public static Pokemon pick(ArrayList<Pokemon> pokemon) {
+	private static Pokemon pick(ArrayList<Pokemon> pokemon) {
 		int index = (int)(Math.random() * (pokemon.size()));
 		Pokemon randomPokemon = pokemon.get(index);
 		pokemon.remove(index);
@@ -264,7 +264,7 @@ public class Game {
 	 * @param pokemonList	List of Pokemon objects to save.
 	 * @param savefile		The file to write to.
 	 */
-	public static void savePokemon(ArrayList<Pokemon> pokemonList, String savefile) {
+	private static void savePokemon(ArrayList<Pokemon> pokemonList, String savefile) {
 		try (PrintWriter file = new PrintWriter(savefile)) {
 			for (Pokemon pokemon : pokemonList) {
 				file.println(pokemon.saveString());
@@ -277,10 +277,10 @@ public class Game {
 	
 	/**
 	 * Saves all items in a list to a text file.
-	 * @param itemList	List of Item objects to save.
-	 * @param savefile	The file to write to.
+	 * @param inventory	The items of a player
+	 * @param savefile		The file to write to.
 	 */
-	public static void saveInventory(Inventory inventory, String savefile) {
+	private static void saveInventory(Inventory inventory, String savefile) {
 		try (PrintWriter file = new PrintWriter(savefile)) {
 			for (Pokeball pokeball : inventory.getPokeballs()) {
 				file.println(pokeball.saveString());
@@ -300,17 +300,15 @@ public class Game {
 	 * @param savefile	The file to write to.
 	 * @return			A list of pokemon or null on failiure.
 	 */
-	public static ArrayList<Pokemon> loadPokemon(String savefile) {
-		ArrayList<Pokemon> pokemon = new ArrayList<Pokemon>();
+	private static ArrayList<Pokemon> loadPokemon(String savefile) {
+		ArrayList<Pokemon> pokemon = new ArrayList<>();
 		try (Scanner file = new Scanner(new File(savefile))) {
 			NumberFormat format = NumberFormat.getInstance(Locale.ENGLISH);
 			while (file.hasNextLine()) {
 				String[] data = file.nextLine().split(";");
 				try {
 					pokemon.add(new Pokemon(data[0], Integer.parseInt(data[1]), Integer.parseInt(data[2]), Integer.parseInt(data[3]), format.parse(data[4]).doubleValue(), Integer.parseInt(data[5]), Integer.parseInt(data[6]), Integer.parseInt(data[7])));
-				} catch (NumberFormatException e) {
-					System.out.println("Malformed number " + e);
-				} catch (ParseException e) {
+				} catch (NumberFormatException | ParseException e) {
 					System.out.println("Malformed number " + e);
 				} catch (ArrayIndexOutOfBoundsException e) {
 					System.out.println("Invalid savefile: " + savefile);
@@ -330,9 +328,9 @@ public class Game {
 	 * @param savefile	The file to write to.
 	 * @return			A list of items or null on failiure.
 	 */
-	public static Inventory loadInventory(String savefile) {
-		ArrayList<Pokeball> pokeballs = new ArrayList<Pokeball>();
-		ArrayList<Potion> potions = new ArrayList<Potion>();
+	private static Inventory loadInventory(String savefile) {
+		ArrayList<Pokeball> pokeballs = new ArrayList<>();
+		ArrayList<Potion> potions = new ArrayList<>();
 		try (Scanner file = new Scanner(new File(savefile))) {
 			String next = "";
 			while (file.hasNextLine() && !next.equals(":NEXTLIST:")) {
@@ -364,9 +362,9 @@ public class Game {
 		return new Inventory(pokeballs, potions);
 	}
 	
-	public static ArrayList<Pokemon> randomTeam() {
+	private static ArrayList<Pokemon> randomTeam() {
 		ArrayList<Pokemon> temporary = readPokemon();
-		ArrayList<Pokemon> pokemon = new ArrayList<Pokemon>();
+		ArrayList<Pokemon> pokemon = new ArrayList<>();
 		for (int i = 1; i <= 6; i++) {
 			pokemon.add(pick(temporary));
 		}

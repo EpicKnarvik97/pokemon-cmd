@@ -1,10 +1,10 @@
 import java.util.ArrayList;
 
 public class Pokeball {
-	public static enum Pokeballs { POKEBALL, GREATBALL, ULTRABALL, MASTERBALL }
-	private String name;
-	private String description;
-	private Pokeballs type;
+	public enum Pokeballs { POKEBALL, GREATBALL, ULTRABALL, MASTERBALL }
+	private final String name;
+	private final String description;
+	private final Pokeballs type;
 	private int amount;
 	
 	public Pokeball(String name, String description, int amount, Pokeballs type) {

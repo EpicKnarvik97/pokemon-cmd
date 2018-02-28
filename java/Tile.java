@@ -1,8 +1,8 @@
 public class Tile {
-	private char representation;
-	private boolean solid;
+	private final char representation;
+	private final boolean solid;
 	private enum Action { TELEPORT, NONE, ENCOUNTER, MENUBATTLE, MENUSHOP }
-	private Action action;
+	private final Action action;
 	private int[] teleportTarget;
 	
 	public Tile (char representation, boolean solid, String action) throws IllegalArgumentException {
@@ -21,8 +21,7 @@ public class Tile {
 		this.solid = solid;
 		this.action = Action.valueOf(action.toUpperCase());
 		if (this.action == Action.TELEPORT) {
-			int[] intArray = {x, y};
-			this.teleportTarget = intArray;
+            this.teleportTarget = new int[]{x, y};
 		} else {
 			throw new IllegalArgumentException("A non-teleport tile can't have a teleport target.");
 		}
@@ -34,6 +33,10 @@ public class Tile {
 	
 	public int[] getTeleportTarget() {
 		return this.teleportTarget;
+	}
+
+	public boolean isSolid() {
+		return this.solid;
 	}
 	
 	public int onWalk() {

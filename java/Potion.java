@@ -1,11 +1,9 @@
-import java.util.ArrayList;
-
 public class Potion {
-	public static enum Potions { POTION, SUPERPOTION, HYPERPOTION, MAXPOTION, REVIVE }
-	private String name;
-	private String description;
-	private Potions type;
-	private boolean alive;
+	public enum Potions { POTION, SUPERPOTION, HYPERPOTION, MAXPOTION, REVIVE }
+	private final String name;
+	private final String description;
+	private final Potions type;
+	private final boolean alive;
 	private int amount;
 	
 	public Potion(String name, String description, int amount, Potions type) {
